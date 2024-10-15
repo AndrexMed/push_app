@@ -1,6 +1,8 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:push_app/firebase_options.dart';
 
 part 'notifications_event.dart';
 part 'notifications_state.dart';
@@ -15,6 +17,12 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     // });
   }
 
+  static Future<void> initializeFBCloudMessaging() async {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform
+    );
+  }
+
   void requestPermission() async {
     NotificationSettings settings = await messaging.requestPermission(
       alert: true,
@@ -25,13 +33,14 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
       provisional: false,
       sound: true,
     );
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      // User granted permission
-    } else if (settings.authorizationStatus ==
-        AuthorizationStatus.provisional) {
-      // User granted provisional permission
-    } else {
-      // User denied permission
-    }
+    settings.authorizationStatus;
+    // if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    //   // User granted permission
+    // } else if (settings.authorizationStatus ==
+    //     AuthorizationStatus.provisional) {
+    //   // User granted provisional permission
+    // } else {
+    //   // User denied permission
+    // }
   }
 }
