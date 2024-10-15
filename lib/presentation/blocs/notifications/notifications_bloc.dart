@@ -8,19 +8,25 @@ part 'notifications_event.dart';
 part 'notifications_state.dart';
 
 class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
-
   FirebaseMessaging messaging = FirebaseMessaging.instance;
 
   NotificationsBloc() : super(const NotificationsState()) {
     // on<NotificationsEvent>((event, emit) {
     //   // TODO: implement event handler
     // });
+    on<NotificationStatusChanged>(_NotificationsStatusChanged);
   }
 
   static Future<void> initializeFBCloudMessaging() async {
     await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform
-    );
+        options: DefaultFirebaseOptions.currentPlatform);
+  }
+
+  void _NotificationsStatusChanged(
+      NotificationStatusChanged event, Emitter<NotificationsState> emit) {
+    emit(state.copyWith(
+      authorizationStatus: event.status,
+    ));
   }
 
   void requestPermission() async {
@@ -33,6 +39,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
       provisional: false,
       sound: true,
     );
+    add(NotificationStatusChanged(settings.authorizationStatus));
     settings.authorizationStatus;
     // if (settings.authorizationStatus == AuthorizationStatus.authorized) {
     //   // User granted permission
