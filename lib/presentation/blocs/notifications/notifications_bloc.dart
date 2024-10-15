@@ -11,10 +11,9 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
 
   NotificationsBloc() : super(const NotificationsState()) {
-    // on<NotificationsEvent>((event, emit) {
-    //   // TODO: implement event handler
-    // });
     on<NotificationStatusChanged>(_NotificationsStatusChanged);
+
+    _initialStatusCheck();
   }
 
   static Future<void> initializeFBCloudMessaging() async {
@@ -29,6 +28,20 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     ));
   }
 
+  void _initialStatusCheck() async {
+    NotificationSettings settings = await messaging.getNotificationSettings();
+    add(NotificationStatusChanged(settings.authorizationStatus));
+    _getFCMToken();
+  }
+
+  void _getFCMToken() async {
+    final settings = await messaging.getNotificationSettings();
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      final token = await messaging.getToken();
+      print('FCM Token: $token');
+    }
+  }
+
   void requestPermission() async {
     NotificationSettings settings = await messaging.requestPermission(
       alert: true,
@@ -40,14 +53,5 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
       sound: true,
     );
     add(NotificationStatusChanged(settings.authorizationStatus));
-    settings.authorizationStatus;
-    // if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-    //   // User granted permission
-    // } else if (settings.authorizationStatus ==
-    //     AuthorizationStatus.provisional) {
-    //   // User granted provisional permission
-    // } else {
-    //   // User denied permission
-    // }
   }
 }
