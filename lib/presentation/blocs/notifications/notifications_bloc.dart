@@ -7,11 +7,20 @@ import 'package:push_app/firebase_options.dart';
 part 'notifications_event.dart';
 part 'notifications_state.dart';
 
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // If you're going to use other Firebase services in the background, such as Firestore,
+  // make sure you call `initializeApp` before using other Firebase services.
+  await Firebase.initializeApp();
+
+  print("Handling a background message: ${message.messageId}");
+}
+
 class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
 
   NotificationsBloc() : super(const NotificationsState()) {
-    on<NotificationStatusChanged>(_NotificationsStatusChanged);
+    
+    on<NotificationStatusChanged>(_notificationsStatusChanged);
 
      //verificasr si el usuario acepto las notificaciones
     _initialStatusCheck();
@@ -25,7 +34,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
         options: DefaultFirebaseOptions.currentPlatform);
   }
 
-  void _NotificationsStatusChanged(
+  void _notificationsStatusChanged(
       NotificationStatusChanged event, Emitter<NotificationsState> emit) {
     emit(state.copyWith(
       authorizationStatus: event.status,
