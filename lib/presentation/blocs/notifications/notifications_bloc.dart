@@ -15,7 +15,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // make sure you call `initializeApp` before using other Firebase services.
   await Firebase.initializeApp();
 
-  print("Handling a background message: ${message.messageId}");
+  //print("Handling a background message: ${message.messageId}");
 }
 
 class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
@@ -23,8 +23,9 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
 
   NotificationsBloc() : super(const NotificationsState()) {
     on<NotificationStatusChanged>(_notificationsStatusChanged);
+    on<NotificationReceived>(_onPushMessageReceived);
 
-    //verificasr si el usuario acepto las notificaciones
+    //verificar si el usuario acepto las notificaciones
     _initialStatusCheck();
 
     _onForegroundMessage();
@@ -39,6 +40,13 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
       NotificationStatusChanged event, Emitter<NotificationsState> emit) {
     emit(state.copyWith(
       authorizationStatus: event.status,
+    ));
+  }
+
+  void _onPushMessageReceived(
+      NotificationReceived event, Emitter<NotificationsState> emit) {
+    emit(state.copyWith(
+      notifications: [event.pushMessage, ...state.notifications],
     ));
   }
 
@@ -73,7 +81,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
           : message.notification?.apple?.imageUrl,
     );
 
-    print(notification);
+    add(NotificationReceived(notification));
   }
 
   void _onForegroundMessage() {
